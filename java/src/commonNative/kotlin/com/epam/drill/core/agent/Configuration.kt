@@ -17,11 +17,11 @@ fun performAgentInitialization(initialParams: Map<String, String>) {
     val agentId = initialParams.getValue("agentId")
     val buildVersion = initialParams["buildVersion"] ?: ""
     val instanceId = initialParams["instanceId"]?: uuid4().toString()
-    val serviceGroupId = initialParams["serviceGroupId"] ?: ""
+    val groupId = initialParams["groupId"] ?: initialParams["serviceGroupId"] ?: ""
     val drillInstallationDir = initialParams["drillInstallationDir"] ?: javaProcess().firstAgentPath
     exec {
         this.drillInstallationDir = drillInstallationDir
-        this.agentConfig = AgentConfig(agentId, instanceId, buildVersion, serviceGroupId, AGENT_TYPE)
+        this.agentConfig = AgentConfig(agentId, instanceId, buildVersion, groupId, AGENT_TYPE)
         this.adminAddress = URL("ws://$adminAddress")
     }
 }
@@ -78,14 +78,11 @@ fun calculateBuildVersion() {
     val initializerClass = FindClass("com/epam/drill/ws/Initializer")
     val selfMethodId: jfieldID? =
         GetStaticFieldID(initializerClass, "INSTANCE", "Lcom/epam/drill/ws/Initializer;")
-    val initializer: jobject? = GetStaticObjectField(initializerClass, selfMethodId)
+    GetStaticObjectField(initializerClass, selfMethodId)
     if (agentConfig.buildVersion.isEmpty()) {
-        val calculateBuild: jmethodID? = GetMethodID(initializerClass, "calculateBuild", "()I")
-        val buildVersion = CallIntMethod(initializer, calculateBuild)
-
-        agentConfig.buildVersion = buildVersion.toString()
+        agentConfig.buildVersion = "unspecified"
     }
-    KotlinLogging.logger("BuildVersionLogger").info { "Calculated build version: ${agentConfig.buildVersion}" }
+    KotlinLogging.logger("BuildVersionLogger").info { "Build version: ${agentConfig.buildVersion}" }
 }
 
 fun getClassesByConfig(): List<String> {

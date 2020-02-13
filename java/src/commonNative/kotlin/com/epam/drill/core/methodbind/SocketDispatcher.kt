@@ -18,11 +18,11 @@ val httpRequestLogger = KotlinLogging.logger("http requestLogger")
 fun configureHttp() {
     configureHttpInterceptor()
     headersForInject.value = {
-        val agentId = generateId()
+        val idHeaderPair = idHeaderPairFromConfig()
         val adminUrl = retrieveAdminUrl()
         val sessionId = sessionId()
         mapOf(
-            "drill-agent-id" to agentId,
+            idHeaderPair,
             "drill-admin-url" to adminUrl
         ) + if (sessionId != null)
             mapOf("drill-session-id" to sessionId)
@@ -44,8 +44,12 @@ private fun retrieveAdminUrl(): String {
     }.toString()
 }
 
-private fun generateId() =
-    exec { if (agentConfig.serviceGroupId.isEmpty()) agentConfig.id else agentConfig.serviceGroupId }
+private fun idHeaderPairFromConfig(): Pair<String, String> = exec {
+    when(val groupId = agentConfig.serviceGroupId) {
+        "" -> "drill-agent-id" to agentConfig.id
+        else -> "drill-group-id" to groupId
+    }
+}
 
 fun fillRequestToHolder(request: String) {
     val requestPattern = exec { requestPattern }
