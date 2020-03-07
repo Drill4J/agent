@@ -25,9 +25,10 @@ allprojects {
         kotlinOptions.allWarningsAsErrors = true
     }
     configurations.all {
-        resolutionStrategy.force("org.jetbrains.kotlinx:kotlinx-coroutines-core-native:$coroutinesVersion")
+        resolutionStrategy.dependencySubstitution {
+            substitute(module("org.jetbrains.kotlinx:kotlinx-coroutines-core-native:$coroutinesVersion")).with(module("com.epam.drill.fork.coroutines:kotlinx-coroutines-core-native:$coroutinesVersion"))
+        }
     }
-
 }
 
 kotlin {
@@ -36,16 +37,17 @@ kotlin {
             defaultSourceSet {
                 dependsOn(sourceSets.named("commonMain").get())
                 dependencies {
-                    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-native:$serializationRuntimeVersion")
+                    implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor-native:$serializationRuntimeVersion")
                     implementation("com.epam.drill.transport:core:$drillTransportLibVerison")
                     implementation("com.epam.drill.interceptor:http:$drillHttpInterceptorVersion")
                     implementation("com.epam.drill:drill-agent-part:$drillApiVersion")
                     implementation("com.epam.drill:common:$drillApiVersion")
                     implementation("com.epam.drill.logger:logger:$drillLogger")
+                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-native:$coroutinesVersion")
                 }
             }
         }
-        posix{
+        posix {
             defaultSourceSet {
                 dependsOn(sourceSets.named("commonMain").get())
             }

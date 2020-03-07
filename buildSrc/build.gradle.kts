@@ -9,7 +9,7 @@ repositories {
     jcenter()
 }
 
-val kotlinVersion = "1.3.61"
+val kotlinVersion = "1.3.70"
 val drillPluginVersion = "0.15.1"
 
 dependencies {
