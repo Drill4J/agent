@@ -15,10 +15,10 @@ fun sendMessage(pluginId: String, content: String) {
         Message(
             MessageType.PLUGIN_DATA,
             "",
-            MessageWrapper.serializer() stringify MessageWrapper(
+            (MessageWrapper.serializer() stringify MessageWrapper(
                 pluginId,
                 DrillMessage(drillRequest()?.drillSessionId ?: "", content)
-            )
+            )).encodeToByteArray()
         )
     )
 }

@@ -38,7 +38,7 @@ kotlin {
             defaultSourceSet {
                 dependsOn(sourceSets.named("commonMain").get())
                 dependencies {
-                    implementation("org.jetbrains.kotlinx:kotlinx-serialization-cbor-native:$serializationRuntimeVersion")
+                    implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf-native:$serializationRuntimeVersion")
                     implementation("com.epam.drill.transport:core:$drillTransportLibVerison")
                     implementation("com.epam.drill.interceptor:http:$drillHttpInterceptorVersion")
                     implementation("com.epam.drill:drill-agent-part:$drillApiVersion")
@@ -64,6 +64,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation("org.jetbrains.kotlin:kotlin-stdlib-common")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$serializationRuntimeVersion")
             }
         }
     }

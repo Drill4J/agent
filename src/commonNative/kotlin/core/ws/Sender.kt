@@ -1,8 +1,8 @@
 package com.epam.drill.core.ws
 
-import com.epam.drill.common.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.*
+import kotlinx.serialization.protobuf.*
 import kotlin.coroutines.*
 import kotlin.native.concurrent.*
 import kotlin.native.internal.*
@@ -18,7 +18,7 @@ object Sender : CoroutineScope {
     }
 
     inline fun <reified T : Any> send(message: T) = launch {
-        msChannel.send(T::class.serializer().stringify(message))
+        msChannel.send(ProtoBuf.dump(T::class.serializer(), message))
         GC.collect()
     }
 

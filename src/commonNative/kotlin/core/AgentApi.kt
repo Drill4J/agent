@@ -8,11 +8,13 @@ import kotlin.native.concurrent.*
 
 typealias sendFun = CPointer<CFunction<(pluginId: CPointer<ByteVar>, content: CPointer<ByteVar>) -> Unit>>
 
+val defaultFun: suspend () -> List<ByteArray> = { listOf() }
+
 private val drillRequestCallback_ = AtomicReference<() -> DrillRequest?>({ null }.freeze()).freeze()
-private val sessionStorageCallback = AtomicReference({ _: String,_:String? -> Unit }.freeze()).freeze()
+private val sessionStorageCallback = AtomicReference({ _: String, _: String? -> Unit }.freeze()).freeze()
 private val loadPluginCallback = AtomicReference({ _: String, _: PluginMetadata -> Unit }.freeze()).freeze()
-private val getClassesByConfigCallback = AtomicReference({ listOf<String>() }.freeze()).freeze()
-private val setPackagesPrefixesCallback = AtomicReference({ _: String -> Unit }.freeze()).freeze()
+private val getClassesByConfigCallback = AtomicReference(defaultFun.freeze()).freeze()
+private val setPackagesPrefixesCallback = AtomicReference({ _: PackagesPrefixes -> Unit }.freeze()).freeze()
 val pluginNativeFunction: (CPointed?, String, sendFun) -> NativePart<*>? = { _, _, _ -> null }
 private val nativePluginCallback = AtomicReference(pluginNativeFunction.freeze()).freeze()
 
@@ -22,7 +24,7 @@ var drillRequest: () -> DrillRequest?
         drillRequestCallback_.value = value.freeze()
     }
 
-var sessionStorage: (String, String? ) -> Unit
+var sessionStorage: (String, String?) -> Unit
     get() = sessionStorageCallback.value
     set(value) {
         sessionStorageCallback.value = value.freeze()
@@ -34,13 +36,13 @@ var loadPlugin: (String, PluginMetadata) -> Unit
         loadPluginCallback.value = value.freeze()
     }
 
-
-var getClassesByConfig: () -> List<String>
+var getClassesByConfig: suspend () -> List<ByteArray>
     get() = getClassesByConfigCallback.value
     set(value) {
         getClassesByConfigCallback.value = value.freeze()
     }
-var setPackagesPrefixes: (String) -> Unit
+
+var setPackagesPrefixes: (PackagesPrefixes) -> Unit
     get() = setPackagesPrefixesCallback.value
     set(value) {
         setPackagesPrefixesCallback.value = value.freeze()

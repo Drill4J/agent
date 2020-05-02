@@ -4,6 +4,7 @@ import com.epam.drill.*
 import com.epam.drill.api.*
 import com.epam.drill.api.dto.*
 import com.epam.drill.common.*
+import com.epam.drill.common.serialization.*
 import com.epam.drill.common.ws.*
 import com.epam.drill.core.*
 import com.epam.drill.core.messanger.*
@@ -12,6 +13,7 @@ import com.epam.drill.plugin.*
 import com.epam.drill.plugin.api.processing.*
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
+import kotlinx.serialization.protobuf.*
 import mu.*
 import kotlin.collections.set
 import kotlin.native.concurrent.*
@@ -74,7 +76,7 @@ fun topicRegister() =
             exec { requestPattern = if (headerName.isEmpty()) null else headerName }
         }
 
-        topic<Communication.Agent.SetPackagePrefixesEvent> { payload ->
+        topic<Communication.Agent.SetPackagePrefixesEvent, PackagesPrefixes> { payload ->
             setPackagesPrefixes(payload)
             topicLogger.info { "Agent packages prefixes have been changed" }
         }
@@ -93,12 +95,18 @@ fun topicRegister() =
             )
         }
         topic<Communication.Agent.LoadClassesDataEvent> {
-            val base64Classes = getClassesByConfig()
-            Sender.send(Message(MessageType.START_CLASSES_TRANSFER, "", ""))
-            base64Classes.forEach {
-                Sender.send(Message(MessageType.CLASSES_DATA, "", it))
+            val rawClassFiles = getClassesByConfig()
+            Sender.send(Message(MessageType.START_CLASSES_TRANSFER, ""))
+            rawClassFiles.chunked(150).forEach {
+                Sender.send(
+                    Message(
+                        MessageType.CLASSES_DATA,
+                        "",
+                        ProtoBuf.dump(ByteArrayListWrapper.serializer(), ByteArrayListWrapper(it))
+                    )
+                )
             }
-            Sender.send(Message(MessageType.FINISH_CLASSES_TRANSFER, "", ""))
+            Sender.send(Message(MessageType.FINISH_CLASSES_TRANSFER, ""))
             topicLogger.info { "Agent's application classes processing by config triggered" }
         }
 

@@ -4,6 +4,7 @@ import com.epam.drill.api.*
 import com.epam.drill.common.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.*
+import kotlinx.serialization.protobuf.*
 import kotlin.native.concurrent.*
 
 
@@ -70,8 +71,8 @@ class GenericTopic<T>(
     private val deserializer: KSerializer<T>,
     val block: suspend (T) -> Unit
 ) : Topic(destination) {
-    suspend fun deserializeAndRun(message: String) = withContext(topicContext) {
-        block(deserializer parse message)
+    suspend fun deserializeAndRun(message: ByteArray) = withContext(topicContext) {
+        block(ProtoBuf.load(deserializer, message))
     }
 }
 
@@ -80,8 +81,8 @@ class InfoTopic(
     private val block: suspend (String) -> Unit
 ) : Topic(destination) {
 
-    suspend fun run(message: String) = withContext(topicContext) {
-        block(message)
+    suspend fun run(message: ByteArray) = withContext(topicContext) {
+        block(message.decodeToString())
     }
 }
 
