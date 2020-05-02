@@ -63,7 +63,7 @@ class WsSocket(
                 NeedSyncParam to exec { agentConfig.needSync }.toString()
             )
         )
-        wsClient.onOpen {
+        wsClient.onOpen += {
             wsLogger.debug { "Agent connected" }
         }
 
@@ -85,7 +85,7 @@ class WsSocket(
                         binaryTopicsStorage[pluginMetadata] = topic
                     }
                     is InfoTopic -> {
-                        topic.block(message.data)
+                        topic.run(message.data)
                         Sender.send(
                             Message(
                                 MessageType.MESSAGE_DELIVERED,
@@ -128,7 +128,10 @@ class WsSocket(
             throw WsClosedException("")
         }
         attemptCounter.value = 0.freeze()
-        while (true) wsClient.send(msChannel.receive())
+        while (true) {
+            wsClient.send(msChannel.receive())
+            delay(10)
+        }
     }
 
     fun close() {

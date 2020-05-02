@@ -2,8 +2,13 @@ package com.epam.drill.core.ws
 
 import com.epam.drill.api.*
 import com.epam.drill.common.*
+import kotlinx.coroutines.*
 import kotlinx.serialization.*
 import kotlin.native.concurrent.*
+
+
+@SharedImmutable
+private val topicContext = newSingleThreadContext("topic's processor")
 
 @ThreadLocal
 object WsRouter {
@@ -65,15 +70,20 @@ class GenericTopic<T>(
     private val deserializer: KSerializer<T>,
     val block: suspend (T) -> Unit
 ) : Topic(destination) {
-    suspend fun deserializeAndRun(message: String) {
+    suspend fun deserializeAndRun(message: String) = withContext(topicContext) {
         block(deserializer parse message)
     }
 }
 
 class InfoTopic(
     override val destination: String,
-    val block: suspend (String) -> Unit
-) : Topic(destination)
+    private val block: suspend (String) -> Unit
+) : Topic(destination) {
+
+    suspend fun run(message: String) = withContext(topicContext) {
+        block(message)
+    }
+}
 
 
 open class PluginTopic(

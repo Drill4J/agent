@@ -8,6 +8,6 @@ val drillApiVersion = "0.5.0-31"
 
 val drillLogger = "0.1.2"
 
-val drillTransportLibVerison = "0.1.9"
+val drillTransportLibVerison = "0.1.10"
 
 val kryptoVersion = "1.10.0"
