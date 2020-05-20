@@ -1,16 +1,27 @@
 import org.jetbrains.kotlin.gradle.tasks.*
 
 plugins {
-    id("kotlin-multiplatform")
-    id("kotlinx-serialization")
+    kotlin("multiplatform")
+    kotlin("plugin.serialization")
     id("com.epam.drill.cross-compilation")
-    id("com.epam.drill.version.plugin")
     `maven-publish`
 }
+
+val scriptUrl: String by extra
+
+val serializationRuntimeVersion = "0.20.0"
+val coroutinesVersion = "1.3.5"
+val drillHttpInterceptorVersion = "0.1.3"
+val drillApiVersion = "0.5.0"
+val drillLogger = "0.1.3"
+val drillTransportLibVerison = "0.2.5"
+
 allprojects {
+    apply(from = "$scriptUrl/git-version.gradle.kts")
+
     repositories {
         mavenLocal()
-        mavenCentral()
+        apply(from = "$scriptUrl/maven-repo.gradle.kts")
         jcenter()
         maven(url = "https://dl.bintray.com/kotlin/kotlinx/")
         maven(url = "https://dl.bintray.com/kotlin/ktor/")
@@ -75,22 +86,4 @@ tasks.withType<KotlinNativeCompile> {
     kotlinOptions.freeCompilerArgs += "-Xuse-experimental=kotlin.ExperimentalUnsignedTypes"
     kotlinOptions.freeCompilerArgs += "-Xuse-experimental=kotlin.time.ExperimentalTime"
     kotlinOptions.freeCompilerArgs += "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi"
-}
-
-publishing {
-    repositories {
-        maven {
-            url = uri("http://oss.jfrog.org/oss-release-local")
-            credentials {
-                username =
-                    if (project.hasProperty("bintrayUser"))
-                        project.property("bintrayUser").toString()
-                    else System.getenv("BINTRAY_USER")
-                password =
-                    if (project.hasProperty("bintrayApiKey"))
-                        project.property("bintrayApiKey").toString()
-                    else System.getenv("BINTRAY_API_KEY")
-            }
-        }
-    }
 }

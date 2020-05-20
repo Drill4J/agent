@@ -2,10 +2,12 @@ name: Check
 on:
   pull_request:
     branches:
-      - develop
-    paths-ignore:
-      - '**.md'
-      - 'LICENSE'
+      - 'develop'
+      - 'release/*'
+    paths:
+      - '**/src/**'
+      - '**.gradle.kts'
+      - 'gradle.properties'
 
 jobs:
   check:
@@ -24,6 +26,6 @@ jobs:
           java-version: 11
       - uses: eskatos/gradle-command-action@v1
         with:
-          arguments: -s ${{ matrix.config.task }} jvmTest
+          arguments: -s ${{ matrix.config.task }}
         env:
           GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx2g
