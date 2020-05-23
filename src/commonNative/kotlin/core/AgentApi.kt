@@ -11,7 +11,7 @@ typealias sendFun = CPointer<CFunction<(pluginId: CPointer<ByteVar>, content: CP
 val defaultFun: suspend () -> List<ByteArray> = { listOf() }
 
 private val drillRequestCallback_ = AtomicReference<() -> DrillRequest?>({ null }.freeze()).freeze()
-private val sessionStorageCallback = AtomicReference({ _: String, _: String? -> Unit }.freeze()).freeze()
+private val sessionStorageCallback = AtomicReference({ _: DrillRequest -> Unit }.freeze()).freeze()
 private val loadPluginCallback = AtomicReference({ _: String, _: PluginMetadata -> Unit }.freeze()).freeze()
 private val getClassesByConfigCallback = AtomicReference(defaultFun.freeze()).freeze()
 private val setPackagesPrefixesCallback = AtomicReference({ _: PackagesPrefixes -> Unit }.freeze()).freeze()
@@ -24,7 +24,7 @@ var drillRequest: () -> DrillRequest?
         drillRequestCallback_.value = value.freeze()
     }
 
-var sessionStorage: (String, String?) -> Unit
+var sessionStorage: (DrillRequest) -> Unit
     get() = sessionStorageCallback.value
     set(value) {
         sessionStorageCallback.value = value.freeze()
