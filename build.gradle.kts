@@ -13,7 +13,8 @@ val serializationRuntimeVersion: String by extra
 val coroutinesVersion: String by extra
 val drillHttpInterceptorVersion: String by extra
 val drillApiVersion: String by extra
-val drillLogger: String by extra
+val drillLoggerVersion: String by extra
+val drillLoggerApiVersion: String by extra
 val drillTransportLibVerison: String by extra
 
 allprojects {
@@ -23,13 +24,8 @@ allprojects {
         mavenLocal()
         apply(from = "$scriptUrl/maven-repo.gradle.kts")
         jcenter()
-        maven(url = "https://dl.bintray.com/kotlin/kotlinx/")
-        maven(url = "https://dl.bintray.com/kotlin/ktor/")
-        maven(url = "https://oss.jfrog.org/artifactory/list/oss-release-local")
-        maven(url = "https://dl.bintray.com/korlibs/korlibs/")
     }
 
-    apply(plugin = "com.epam.drill.version.plugin")
     tasks.withType<KotlinCompile> {
         kotlinOptions.allWarningsAsErrors = true
     }
@@ -44,6 +40,17 @@ allprojects {
 }
 
 kotlin {
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation("org.jetbrains.kotlin:kotlin-stdlib-common")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$serializationRuntimeVersion")
+                implementation("com.epam.drill.logger:logger-api:$drillLoggerApiVersion")
+            }
+        }
+    }
+
     crossCompilation {
         common {
             defaultSourceSet {
@@ -54,7 +61,7 @@ kotlin {
                     implementation("com.epam.drill.interceptor:http:$drillHttpInterceptorVersion")
                     implementation("com.epam.drill:drill-agent-part:$drillApiVersion")
                     implementation("com.epam.drill:common:$drillApiVersion")
-                    implementation("com.epam.drill.logger:logger:$drillLogger")
+                    implementation("com.epam.drill.logger:logger:$drillLoggerVersion")
                     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-native:$coroutinesVersion")
                 }
             }
@@ -69,16 +76,6 @@ kotlin {
     mingwX64()
     linuxX64()
     macosX64()
-
-    sourceSets {
-        commonMain {
-            dependencies {
-                implementation("org.jetbrains.kotlin:kotlin-stdlib-common")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$serializationRuntimeVersion")
-            }
-        }
-    }
-
 }
 
 tasks.withType<KotlinNativeCompile> {

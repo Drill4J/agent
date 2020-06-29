@@ -8,17 +8,17 @@ import com.epam.drill.common.ws.*
 import com.epam.drill.core.*
 import com.epam.drill.core.messanger.*
 import com.epam.drill.logger.*
+import com.epam.drill.logger.api.*
 import com.epam.drill.plugin.*
 import com.epam.drill.plugin.api.processing.*
 import kotlinx.cinterop.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.protobuf.*
-import mu.*
 import kotlin.collections.set
 import kotlin.native.concurrent.*
 
 @SharedImmutable
-private val tempTopicLogger = KotlinLogging.logger("tempTopicLogger")
+private val tempTopicLogger = Logging.logger("tempTopicLogger")
 
 @SharedImmutable
 private val loader = Worker.start(true)
@@ -62,7 +62,13 @@ fun topicRegister() =
 
         rawTopic<LoggingConfig>("/agent/logging/update-config") { lc ->
             tempTopicLogger.info { "Agent got a logging config: $lc" }
-            logConfig.value = LoggerConfig(lc.trace, lc.debug, lc.info, lc.warn).freeze()
+            Logging.logLevel = when {
+                lc.trace -> LogLevel.TRACE
+                lc.debug -> LogLevel.DEBUG
+                lc.info -> LogLevel.INFO
+                lc.warn -> LogLevel.WARN
+                else -> LogLevel.ERROR
+            }
         }
 
         rawTopic<ServiceConfig>("/agent/update-config") { sc ->
