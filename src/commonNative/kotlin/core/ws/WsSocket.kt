@@ -66,7 +66,8 @@ class WsSocket(
             wskey = "",
             params = mutableMapOf(
                 AgentConfigParam to ProtoBuf.dumps(AgentConfig.serializer(), agentConfig),
-                NeedSyncParam to agentConfig.needSync.toString()
+                NeedSyncParam to agentConfig.needSync.toString(),
+                HttpHeaders.ContentEncoding to "deflate"
             )
         )
         wsClient.onOpen += {
