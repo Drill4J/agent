@@ -25,11 +25,7 @@ object Sender : CoroutineScope {
         val messageForSend = ProtoBuf.dump(T::class.serializer(), message)
         logger.trace { "Initial message size: ${messageForSend.size}" }
 
-        val compressed = Deflate.encode(
-            input = messageForSend,
-            bufferSize = if (messageForSend.size > Deflate.CHUNK) messageForSend.size else Deflate.CHUNK,
-            nowrap = true
-        )
+        val compressed = Zstd.encode(input = messageForSend)
         logger.trace { "Compressed message size: ${compressed.size}" }
 
         addMessageToQueue(compressed)

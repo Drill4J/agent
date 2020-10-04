@@ -53,12 +53,14 @@ kotlin {
 
     crossCompilation {
         common {
+            addCInterop()
             defaultSourceSet {
                 dependsOn(sourceSets.named("commonMain").get())
                 dependencies {
                     implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf-native:$serializationRuntimeVersion")
                     implementation("com.epam.drill.transport:core:$drillTransportLibVerison")
                     implementation("com.epam.drill.interceptor:http:$drillHttpInterceptorVersion")
+                    implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.2")
                     implementation("com.epam.drill:drill-agent-part:$drillApiVersion")
                     implementation("com.epam.drill:common:$drillApiVersion")
                     implementation("com.epam.drill.logger:logger:$drillLoggerVersion")
@@ -73,9 +75,16 @@ kotlin {
         }
     }
 
-    mingwX64()
-    linuxX64()
-    macosX64()
+    setOf(
+            macosX64(),
+            mingwX64(),
+            linuxX64()
+    ).forEach {
+        it.compilations["main"].addCInterop()
+    }
+
+        mingwX64 { binaries.all { linkerOpts("-lpsapi", "-lwsock32", "-lws2_32", "-lmswsock") } }
+
 }
 
 tasks.withType<KotlinNativeCompile> {
@@ -83,4 +92,9 @@ tasks.withType<KotlinNativeCompile> {
     kotlinOptions.freeCompilerArgs += "-Xuse-experimental=kotlin.ExperimentalUnsignedTypes"
     kotlinOptions.freeCompilerArgs += "-Xuse-experimental=kotlin.time.ExperimentalTime"
     kotlinOptions.freeCompilerArgs += "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi"
+}
+
+
+fun org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation.addCInterop() {
+    cinterops.create("zstd_bindings").includeDirs(rootProject.file("lib").resolve("include"))
 }
