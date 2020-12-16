@@ -2,6 +2,7 @@ package com.epam.drill.core.ws
 
 import com.epam.drill.api.*
 import com.epam.drill.common.*
+import kotlinx.atomicfu.*
 import kotlinx.coroutines.*
 import kotlinx.serialization.*
 import kotlinx.serialization.protobuf.*
@@ -11,10 +12,13 @@ import kotlin.native.concurrent.*
 @SharedImmutable
 private val topicContext = newSingleThreadContext("topic's processor")
 
+
+@SharedImmutable
+val mapper = atomic(mapOf<String, Topic>().freeze()).freeze()
+
 @ThreadLocal
 object WsRouter {
 
-    val mapper = mutableMapOf<String, Topic>()
     operator fun invoke(alotoftopics: WsRouter.() -> Unit) {
         alotoftopics(this)
     }
@@ -26,14 +30,15 @@ object WsRouter {
         @Suppress("unused")
         fun withPluginTopic(block: suspend (message: PluginMetadata, file: ByteArray) -> Unit): PluginTopic {
             val fileTopic = PluginTopic(destination, block)
-            mapper[destination] = fileTopic
+            val mapping: Pair<String, Topic> = destination to fileTopic
+            mapper.update { it + mapping }
             return fileTopic
         }
 
     }
 
     operator fun get(topic: String): Topic? {
-        return mapper[topic]
+        return mapper.value[topic]
     }
 
 }
@@ -53,13 +58,15 @@ fun WsRouter.rawTopic(path: String): WsRouter.inners {
 inline fun <reified TopicUrl : Any, reified Generic : Any> WsRouter.topic(noinline block: suspend (Generic) -> Unit) {
     val destination = TopicUrl::class.topicUrl()
     val infoTopic = GenericTopic(destination, Generic::class.serializer(), block)
-    mapper[destination] = infoTopic
+    val mapping: Pair<String, Topic> = destination to infoTopic
+    mapper.update { it + mapping }
 }
 
 @Suppress("unused")
-inline fun <reified Generic : Any> WsRouter.rawTopic(destination:String, noinline block: suspend (Generic) -> Unit) {
+inline fun <reified Generic : Any> WsRouter.rawTopic(destination: String, noinline block: suspend (Generic) -> Unit) {
     val infoTopic = GenericTopic(destination, Generic::class.serializer(), block)
-    mapper[destination] = infoTopic
+    val mapping: Pair<String, Topic> = destination to infoTopic
+    mapper.update { it + mapping }
 }
 
 @Suppress("unused")
@@ -72,13 +79,15 @@ inline fun <reified TopicUrl : Any> WsRouter.topic(noinline block: suspend (Stri
 
     val destination = TopicUrl::class.topicUrl()
     val infoTopic = InfoTopic(destination, block)
-    mapper[destination] = infoTopic
+    val mapping: Pair<String, Topic> = destination to infoTopic
+    mapper.update { it + mapping }
 }
 
 @Suppress("unused")
-fun WsRouter.rawTopic(destination:String, block: suspend (String) -> Unit) {
+fun WsRouter.rawTopic(destination: String, block: suspend (String) -> Unit) {
     val infoTopic = InfoTopic(destination, block)
-    mapper[destination] = infoTopic
+    val mapping: Pair<String, Topic> = destination to infoTopic
+    mapper.update { it + mapping }
 }
 
 open class Topic(open val destination: String)

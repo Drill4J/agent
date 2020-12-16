@@ -58,7 +58,7 @@ kotlin {
                 dependsOn(sourceSets.named("commonMain").get())
                 dependencies {
                     implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf-native:$serializationRuntimeVersion")
-                    implementation("com.epam.drill.transport:core:$drillTransportLibVerison")
+                    implementation("com.epam.drill:transport:$drillTransportLibVerison")
                     implementation("com.epam.drill.interceptor:http:$drillHttpInterceptorVersion")
                     implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.2")
                     implementation("com.epam.drill:drill-agent-part:$drillApiVersion")
