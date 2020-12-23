@@ -4,6 +4,8 @@ import com.epam.drill.*
 import com.epam.drill.core.*
 import com.epam.drill.hook.io.tcp.*
 import com.epam.drill.interceptor.*
+import com.epam.drill.logger.*
+import com.epam.drill.logger.api.*
 import com.epam.drill.plugin.*
 import kotlin.native.concurrent.*
 
@@ -21,8 +23,12 @@ fun configureHttp() {
     readHeaders.value = { rawHeaders: Map<ByteArray, ByteArray> ->
         val headers = rawHeaders.entries.associate { (k, v) ->
             k.decodeToString().toLowerCase() to v.decodeToString()
-        }.apply {
-            logger.debug { "Drill headers: ${filterKeys { it.startsWith("drill-") }}" }
+        }
+        if (Logging.logLevel <= LogLevel.DEBUG) {
+            val drillHeaders = headers.filterKeys { it.startsWith("drill-") }
+            if (drillHeaders.any()) {
+                logger.debug { "Drill headers: $drillHeaders" }
+            }
         }
         val sessionId = headers[requestPattern] ?: headers["drill-session-id"]
         sessionId?.let { DrillRequest(it, headers) }?.also {
