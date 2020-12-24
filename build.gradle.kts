@@ -82,6 +82,14 @@ kotlin {
     ).forEach {
         it.compilations["main"].addCInterop()
     }
+    jvm {
+        val main by compilations
+        main.defaultSourceSet {
+            dependencies {
+                compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationRuntimeVersion")
+            }
+        }
+    }
 
 }
 

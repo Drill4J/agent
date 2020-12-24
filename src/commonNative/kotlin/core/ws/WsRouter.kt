@@ -113,8 +113,7 @@ fun topicRegister() =
             if (agentPluginPart != null) {
                 agentPluginPart.setEnabled(false)
                 agentPluginPart.off()
-                agentPluginPart.updateRawConfig(config)
-                agentPluginPart.np?.updateRawConfig(config)
+                agentPluginPart.updateRawConfig(config.data)
                 agentPluginPart.setEnabled(true)
                 agentPluginPart.on()
                 tempTopicLogger.warn { "New settings for ${config.id} saved to file" }

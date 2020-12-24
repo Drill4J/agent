@@ -45,13 +45,13 @@ var agentConfig: AgentConfig
     }
 
 @SharedImmutable
-private val _pstorage = atomic(persistentHashMapOf<String, AgentPart<*, *>>())
+private val _pstorage = atomic(persistentHashMapOf<String, AgentPart<*>>())
 
 val pstorage
     get() = _pstorage.value
 
 
-fun addPluginToStorage(plugin: AgentPart<*,*>) {
+fun addPluginToStorage(plugin: AgentPart<*>) {
     _pstorage.update { it + (plugin.id to plugin) }
 }
 

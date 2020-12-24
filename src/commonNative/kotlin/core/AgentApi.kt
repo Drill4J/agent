@@ -16,7 +16,7 @@ private val closeSessionCallback = AtomicReference({ }.freeze()).freeze()
 private val loadPluginCallback = AtomicReference({ _: String, _: PluginMetadata -> Unit }.freeze()).freeze()
 private val getClassesByConfigCallback = AtomicReference(defaultFun.freeze()).freeze()
 private val setPackagesPrefixesCallback = AtomicReference({ _: PackagesPrefixes -> Unit }.freeze()).freeze()
-val pluginNativeFunction: (CPointed?, String, sendFun) -> NativePart<*>? = { _, _, _ -> null }
+val pluginNativeFunction: (CPointed?, String, sendFun) -> NativePart? = { _, _, _ -> null }
 private val nativePluginCallback = AtomicReference(pluginNativeFunction.freeze()).freeze()
 
 var drillRequest: () -> DrillRequest?
@@ -55,7 +55,7 @@ var setPackagesPrefixes: (PackagesPrefixes) -> Unit
         setPackagesPrefixesCallback.value = value.freeze()
     }
 
-var nativePlugin: (CPointed?, String, sendFun) -> NativePart<*>?
+var nativePlugin: (CPointed?, String, sendFun) -> NativePart?
     get() = nativePluginCallback.value
     set(value) {
         nativePluginCallback.value = value.freeze()

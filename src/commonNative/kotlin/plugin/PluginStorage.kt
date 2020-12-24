@@ -6,15 +6,15 @@ import com.epam.drill.core.plugin.*
 import com.epam.drill.plugin.api.processing.*
 import kotlinx.collections.immutable.*
 
-val storage: PersistentMap<String, AgentPart<*, *>>
+val storage: PersistentMap<String, AgentPart<*>>
     get() = pstorage
 
 
-fun AgentPart<*, *>.actualPluginConfig() = pluginConfigById(this.id)
+fun AgentPart<*>.actualPluginConfig() = pluginConfigById(this.id)
 
 object PluginManager {
 
-    fun addPlugin(plugin: AgentPart<*, *>) {
+    fun addPlugin(plugin: AgentPart<*>) {
         addPluginToStorage(plugin)
     }
 
