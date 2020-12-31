@@ -31,7 +31,7 @@ class WsSocket : CoroutineScope {
         val url = URL("$adminUrl/agent/attach")
         val wsClient = WSClientFactory.createClient(
             url, mutableMapOf(
-                AgentConfigParam to ProtoBuf.dumps(AgentConfig.serializer(), agentConfig),
+                AgentConfigParam to ProtoBuf.encodeToHexString(AgentConfig.serializer(), agentConfig),
                 NeedSyncParam to agentConfig.needSync.toString(),
                 HttpHeaders.ContentEncoding to "deflate"
             )
@@ -49,7 +49,7 @@ class WsSocket : CoroutineScope {
                 launch {
                     when (topic) {
                         is PluginTopic -> {
-                            val pluginMetadata = ProtoBuf.load(PluginBinary.serializer(), message.data)
+                            val pluginMetadata = ProtoBuf.decodeFromByteArray(PluginBinary.serializer(), message.data)
                             val duration = measureTime { topic.block(pluginMetadata.meta, pluginMetadata.data) }
                             wsLogger.debug { "'$destination' took $duration" }
                             Sender.send(Message(MessageType.MESSAGE_DELIVERED, "/agent/load"))
@@ -93,4 +93,4 @@ class WsSocket : CoroutineScope {
 
 }
 
-private fun ByteArray.toWsMessage() = ProtoBuf.load(Message.serializer(), this)
+private fun ByteArray.toWsMessage() = ProtoBuf.decodeFromByteArray(Message.serializer(), this)

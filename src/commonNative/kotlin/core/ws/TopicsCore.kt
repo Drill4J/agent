@@ -98,7 +98,7 @@ class GenericTopic<T>(
     val block: suspend (T) -> Unit
 ) : Topic(destination) {
     suspend fun deserializeAndRun(message: ByteArray) = withContext(topicContext) {
-        block(ProtoBuf.load(deserializer, message))
+        block(ProtoBuf.decodeFromByteArray(deserializer, message))
     }
 }
 

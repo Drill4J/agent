@@ -11,7 +11,7 @@ object Sender {
     val logger = Logging.logger("AsyncSender")
 
     inline fun <reified T : Any> send(message: T) {
-        val messageForSend = ProtoBuf.dump(T::class.serializer(), message)
+        val messageForSend = ProtoBuf.encodeToByteArray(T::class.serializer(), message)
         logger.trace { "Initial message size: ${messageForSend.size}" }
 
         val compressed = Zstd.compress(input = messageForSend)

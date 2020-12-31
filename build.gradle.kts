@@ -16,6 +16,7 @@ val drillApiVersion: String by extra
 val drillLoggerVersion: String by extra
 val drillLoggerApiVersion: String by extra
 val drillTransportLibVerison: String by extra
+val kxCollection: String by extra
 
 allprojects {
     apply(from = "$scriptUrl/git-version.gradle.kts")
@@ -29,14 +30,6 @@ allprojects {
     tasks.withType<KotlinCompile> {
         kotlinOptions.allWarningsAsErrors = true
     }
-    tasks.withType<KotlinNativeCompile> {
-        kotlinOptions.allWarningsAsErrors = true
-    }
-    configurations.all {
-        resolutionStrategy.dependencySubstitution {
-            substitute(module("org.jetbrains.kotlinx:kotlinx-coroutines-core-native:$coroutinesVersion")).with(module("org.jetbrains.kotlinx:kotlinx-coroutines-core-native:$coroutinesVersion-native-mt"))
-        }
-    }
 }
 
 kotlin {
@@ -44,8 +37,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation("org.jetbrains.kotlin:kotlin-stdlib-common")
-                implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime-common:$serializationRuntimeVersion")
+                implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:$serializationRuntimeVersion")
                 implementation("com.epam.drill.logger:logger-api:$drillLoggerApiVersion")
             }
         }
@@ -57,14 +49,16 @@ kotlin {
             defaultSourceSet {
                 dependsOn(sourceSets.named("commonMain").get())
                 dependencies {
-                    implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf-native:$serializationRuntimeVersion")
+                    implementation("org.jetbrains.kotlinx:kotlinx-serialization-protobuf:$serializationRuntimeVersion")
                     implementation("com.epam.drill:transport:$drillTransportLibVerison")
                     implementation("com.epam.drill.interceptor:http:$drillHttpInterceptorVersion")
-                    implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.2")
+                    implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:$kxCollection")
                     implementation("com.epam.drill:drill-agent-part:$drillApiVersion")
                     implementation("com.epam.drill:common:$drillApiVersion")
                     implementation("com.epam.drill.logger:logger:$drillLoggerVersion")
-                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-native:$coroutinesVersion")
+                    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core") {
+                        version { strictly("$coroutinesVersion-native-mt") }
+                    }
                 }
             }
         }
@@ -86,7 +80,7 @@ kotlin {
         val main by compilations
         main.defaultSourceSet {
             dependencies {
-                compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-runtime:$serializationRuntimeVersion")
+                compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-core:$serializationRuntimeVersion")
             }
         }
     }
@@ -94,10 +88,11 @@ kotlin {
 }
 
 tasks.withType<KotlinNativeCompile> {
-    kotlinOptions.freeCompilerArgs += "-Xuse-experimental=kotlinx.serialization.ImplicitReflectionSerializer"
     kotlinOptions.freeCompilerArgs += "-Xuse-experimental=kotlin.ExperimentalUnsignedTypes"
     kotlinOptions.freeCompilerArgs += "-Xuse-experimental=kotlin.time.ExperimentalTime"
     kotlinOptions.freeCompilerArgs += "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi"
+    kotlinOptions.freeCompilerArgs += "-Xuse-experimental=kotlinx.serialization.InternalSerializationApi"
+    kotlinOptions.freeCompilerArgs += "-Xuse-experimental=kotlinx.serialization.ExperimentalSerializationApi"
 }
 
 
