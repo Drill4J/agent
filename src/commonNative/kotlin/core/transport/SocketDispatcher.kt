@@ -44,7 +44,7 @@ fun configureHttp() {
 
 }
 
-private fun idHeaderPairFromConfig(): Pair<String, String> =
+fun idHeaderPairFromConfig(): Pair<String, String> =
     when (val groupId = agentConfig.serviceGroupId) {
         "" -> "drill-agent-id" to agentConfig.id
         else -> "drill-group-id" to groupId
@@ -54,7 +54,7 @@ private fun idHeaderPairFromConfig(): Pair<String, String> =
 @ThreadLocal
 var drillRequest: DrillRequest? = null
 
-private fun retrieveAdminUrl(): String {
+fun retrieveAdminUrl(): String {
     return if (secureAdminAddress != null) {
         secureAdminAddress?.toUrlString(false).toString()
     } else adminAddress?.toUrlString(false).toString()
