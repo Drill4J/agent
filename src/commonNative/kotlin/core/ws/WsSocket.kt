@@ -44,13 +44,14 @@ class WsSocket : CoroutineScope {
 
     fun connect(adminUrl: String) {
         val url = URL("$adminUrl/agent/attach")
-        val wsClient = WSClientFactory.createClient(
-            url, mutableMapOf(
+        headers = {
+            mutableMapOf(
                 AgentConfigParam to ProtoBuf.encodeToHexString(AgentConfig.serializer(), agentConfig),
-                NeedSyncParam to agentConfig.needSync.toString(),
+                NeedSyncParam to pstorage.none().toString(),
                 HttpHeaders.ContentEncoding to "deflate"
             )
-        )
+        }
+        val wsClient = WSClientFactory.createClient(url)
         ws.value = wsClient
         wsClient.onOpen {
             wsLogger.info { "Agent connected" }
