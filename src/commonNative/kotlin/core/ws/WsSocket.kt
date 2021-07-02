@@ -98,7 +98,7 @@ class WsSocket : CoroutineScope {
         }
 
         wsClient.onError {
-            wsLogger.error { "WS error" }
+            wsLogger.error { "WS error: $it" }
         }
         wsClient.onClose {
             wsLogger.info { "Websocket closed" }
