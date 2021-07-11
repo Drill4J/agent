@@ -82,6 +82,17 @@ fun topicRegister() =
             }
         }
 
+        rawTopic<Map<String, String>>("/agent/update-config") { parameters ->
+            tempTopicLogger.info { "Agent update config by $parameters" }
+            val agentParameters: Map<String, AgentParameter> = agentConfig.parameters
+            parameters.map { updateParameter ->
+                agentParameters[updateParameter.key]?.let {
+                    tempTopicLogger.info { "Agent update.key: ${updateParameter.key} old value ${it.value} value = ${updateParameter.value}" }
+                    it.value = updateParameter.value
+                }
+            }
+        }
+
         rawTopic<ServiceConfig>("/agent/update-config") { sc ->
             tempTopicLogger.info { "Agent got a system config: $sc" }
             secureAdminAddress = adminAddress?.copy(scheme = "https", defaultPort = sc.sslPort.toInt())
